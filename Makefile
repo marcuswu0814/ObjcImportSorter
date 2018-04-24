@@ -12,6 +12,9 @@ run:
 clean:
 	swift package clean
 
+test: xcode
+    set -o pipefail && xcodebuild -scheme ObjcImportSorter-Package -enableCodeCoverage YES clean build test | xcpretty
+
 xcode:
 	swift package generate-xcodeproj
 

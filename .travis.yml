@@ -1,0 +1,9 @@
+language: objective-c
+os: osx
+osx_image: xcode9
+env: SWIFT_VERSION=4.0
+script:
+  - make test
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -J 'ObjcImportSorter'
+
