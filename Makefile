@@ -13,7 +13,7 @@ clean:
 	swift package clean
 
 test: xcode
-    set -o pipefail && xcodebuild -scheme ObjcImportSorter-Package -enableCodeCoverage YES clean build test | xcpretty
+	set -o pipefail && xcodebuild -scheme ObjcImportSorter-Package -enableCodeCoverage YES clean build test | xcpretty
 
 xcode:
 	swift package generate-xcodeproj
@@ -21,4 +21,3 @@ xcode:
 install: build
 	mkdir -p "$(PREFIX)/bin"
 	cp -f ".build/release/$(PROD_NAME)" "$(PREFIX)/bin/$(PROD_NAME_UNDERLINE)"
-
