@@ -30,25 +30,17 @@ class StringObjcImportSorterTest: XCTestCase {
     }
     
     func test__shouldFindInternalImports() {
-        guard let fileContent: String = try? testFilePath.read() else {
-            XCTFail("File content can't be nil")
-            return
-        }
+        let fileContent: String? = try? testFilePath.read()
+        let result = fileContent?.findInternalImport()
         
-        let result = fileContent.findInternalImport()
-        
-        XCTAssertTrue(result.count == 3)
+        XCTAssertEqual(result?.count, 3)
     }
     
     func test__shouldFindFrameworkImports() {
-        guard let fileContent: String = try? testFilePath.read() else {
-            XCTFail("File content can't be nil")
-            return
-        }
+        let fileContent: String? = try? testFilePath.read()
+        let result = fileContent?.findFrameworkImport()
         
-        let result = fileContent.findFrameworkImport()
-        
-        XCTAssertTrue(result.count == 5)
+        XCTAssertEqual(result?.count, 5)
     }
     
     override func tearDown() {
