@@ -1,18 +1,53 @@
 import Foundation
 import Rainbow
 
+struct PartDetail {
+    var isFirstPart: Bool
+    var isIfdefPart: Bool
+    var firstImportPosition: Int
+    var contentOrigin: String
+    var contentWithoutImport: String
+    var internalImports: [String]
+    var frameworkImports: [String]
+}
+
+class ImportSortLogic {
+    
+    func sortInternalImports(_ imports: [String]) -> [String] {
+        return imports.sorted()
+    }
+    
+    func sortFrameworkImports(_ imports: [String]) -> [String] {
+        var sortedResult = [[String]]()
+        var dictionary = [String: [String]]()
+        
+        imports.forEach { each in
+            let frameworkName = String(each.split(separator: "/")[0])
+            
+            if dictionary[frameworkName] != nil {
+                dictionary[frameworkName]?.append(each)
+            } else {
+                dictionary[frameworkName] = [each]
+            }
+        }
+        
+        dictionary.sorted { $0.key < $1.key }.forEach { arg in
+            sortedResult.append(arg.value.sorted())
+        }
+        
+        return sortedResult.joined(separator: [""]).flatMap { $0 }
+    }
+    
+}
+
 public class ImportSorter {
     
     public init() {
         
     }
     
-    public func sort() {
-        
-        // Step 1. 拿所有的`*.h` 檔案path
-        let filePaths = FilePathScanner.scanFile(type: .h)
-        
-        // Step 2. 依序打開檔案
+    public func sort(by type: FileType) {
+        let filePaths = FilePathScanner.scanFile(type: type)
         
         var count = 0
         
@@ -31,39 +66,34 @@ public class ImportSorter {
                 return
             }
             
-            // Step 2 - 4. 找到第一個import 的位置 (插隊，我們發現如果沒找到直接離開比較快）
+            let fileParts = filePart(by: fileContent)
+           
+            let detail = partDetails(by: fileParts)
             
-            guard let firstPosition = FirstImportPositionFinder(with: fileContent).find() else {
+            let position = detail.filter { $0.isFirstPart }.first?.firstImportPosition
+            
+            guard let firstImportPosition = position else {
                 return
             }
+
+            let allInternalImports = detail.filter { !$0.isIfdefPart }.map { $0.internalImports }.flatMap { $0 }
+            let allFrameworkImports = detail.filter { !$0.isIfdefPart }.map { $0.frameworkImports }.flatMap { $0 }
+            let allSortedFrameworkImports = ImportSortLogic().sortFrameworkImports(allFrameworkImports)
+            let allSortedInternalImports = ImportSortLogic().sortInternalImports(allInternalImports)
+            let noImportFileContent = detail.map { $0.isIfdefPart ? $0.contentOrigin : $0.contentWithoutImport }.joined(separator: "\n\n").appending("\n\n")
             
-            // Step 2 - 1. 找到internal import（已經獨立完成）
-            let internalImports = fileContent.findInternalImport()
+            let bothImportsNotEmpty = allSortedFrameworkImports.count > 0 && allSortedInternalImports.count > 0
+            let combine = bothImportsNotEmpty ?
+                allSortedInternalImports + [""] + allSortedFrameworkImports :
+                allSortedInternalImports + allSortedFrameworkImports
             
-            // Step 2 - 2. 找到framework import（已經獨立完成）
-            let frameworkImports = fileContent.findFrameworkImport()
+            var lines = noImportFileContent.components(separatedBy: .newlines)
+            lines.insert(contentsOf: combine + [""], at: firstImportPosition)
             
-            // Step 2 - 3. 排序，上面排完了
-            
-            // Step 2 - 5. 刪除所有import，得到剩餘內容
-            
-            let excludeImportContent = FileImportKiller(with: fileContent).kill()
-            
-            // Step 2 - 6. 將排序完成的import 插回
-            
-            let bothImportsNotEmpty = internalImports.count > 0 && frameworkImports.count > 0
-            let combine = bothImportsNotEmpty ? internalImports + [""] + frameworkImports : internalImports + frameworkImports
-            
-            var lines = excludeImportContent.components(separatedBy: .newlines)
-            lines.insert(contentsOf: combine, at: firstPosition)
-            
-            // Step 2 - 7. 消除最後一筆import 之後遺留的連續空白行
-            
-            let finalPosition = firstPosition + combine.count
-            
+            let finalImportPosition = firstImportPosition + combine.count
             var countOfEmptyLine = 0
             
-            for line in lines[finalPosition...] {
+            for line in lines[finalImportPosition...] {
                 if line == "" {
                     countOfEmptyLine += 1
                 } else {
@@ -71,18 +101,72 @@ public class ImportSorter {
                 }
             }
             
-            let startIndex = finalPosition
-            let endIndex = finalPosition + countOfEmptyLine - 1
+            let startIndex = finalImportPosition
+            let endIndex = finalImportPosition + countOfEmptyLine - 1
             
             if (endIndex >= startIndex) {
                 let range = Range(startIndex..<endIndex)
                 lines.removeSubrange(range)
-            } else {
-                lines.insert("", at: startIndex)
             }
             
             try? path.write(lines.joined(separator: "\n"))
         })
+    }
+    
+    func partDetails(by fileParts: [String]) -> [PartDetail] {
+        var result = [PartDetail]()
+        
+        for (index, filePart) in fileParts.enumerated() {
+            let firstPosition = FirstImportPositionFinder(with: filePart).find() ?? 0
+            
+            let internalImports = filePart.findInternalImport()
+            let frameworkImports = filePart.findFrameworkImport()
+            
+            let lines = filePart.components(separatedBy: .newlines)
+            let isIfdefPart = lines.filter { $0.contains("#if") }.count > 0
+
+            let excludeImportContent = FileImportKiller(with: filePart).kill().trimmingCharacters(in: .newlines)
+            
+            let partDetail = PartDetail(isFirstPart: index == 0,
+                                        isIfdefPart: isIfdefPart,
+                                        firstImportPosition: firstPosition,
+                                        contentOrigin: filePart,
+                                        contentWithoutImport: excludeImportContent,
+                                        internalImports: internalImports,
+                                        frameworkImports: frameworkImports)
+            
+            result.append(partDetail)
+        }
+        
+        return result
+    }
+    
+    func filePart(by fileContent: String) -> [String] {
+        let lines = fileContent.components(separatedBy: .newlines)
+        var result = [String]()
+        var sectionContents = [String]()
+        var isIfdefSection: Bool = false {
+            didSet {
+                result.append(sectionContents.joined(separator: "\n"))
+                sectionContents.removeAll()
+            }
+        }
+        
+        for line in lines {
+            if line.hasPrefix("#if") {
+                isIfdefSection = true
+                sectionContents.append(line)
+            } else if line.hasPrefix("#endif") {
+                sectionContents.append(line)
+                isIfdefSection = false
+            } else {
+                sectionContents.append(line)
+            }
+        }
+        
+        result.append(sectionContents.joined(separator: "\n"))
+
+        return result.filter { $0 != "" }.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
     
 }

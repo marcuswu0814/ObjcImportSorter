@@ -55,7 +55,9 @@ struct TestDataFactory {
 
     @end
 
+
     """
+    // IMPORTANT: This means one empty line suffix, not two.
     
     static let mocHeader =
     """
@@ -70,6 +72,81 @@ struct TestDataFactory {
     @interface TestCoreData : NSManagedObject
 
     @end
+
+    """
+    
+    static let ifdefContent =
+    """
+    //
+    //  FakeClass.h
+    //  Fake
+    //
+    //  Created by MarcusWu on 2018/4/24.
+    //
+
+    #import "b.h"
+    #import "a.h"
+    
+    #import <UIKit/UIKit.h>
+
+
+    #ifdef TARGET
+    #import "e.h"
+    #import "c.h"
+    #else
+    #import "d.h"
+    #endif
+
+    #import "f.h"
+
+    #import <Foundation/Foundation.h>
+
+    @interface FakeClass : UIView
+
+    #ifdef TARGET
+
+    - (void)testFunc;
+
+    #endif
+
+    @end
+
+    """
+    
+    static let exceptIfdefContent =
+    """
+    //
+    //  FakeClass.h
+    //  Fake
+    //
+    //  Created by MarcusWu on 2018/4/24.
+    //
+
+    #import "a.h"
+    #import "b.h"
+    #import "f.h"
+
+    #import <Foundation/Foundation.h>
+
+    #import <UIKit/UIKit.h>
+
+    #ifdef TARGET
+    #import "e.h"
+    #import "c.h"
+    #else
+    #import "d.h"
+    #endif
+
+    @interface FakeClass : UIView
+
+    #ifdef TARGET
+
+    - (void)testFunc;
+
+    #endif
+
+    @end
+
 
     """
 }

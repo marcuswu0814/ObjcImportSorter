@@ -34,7 +34,6 @@ extension String {
                 
             return String(string[range].dropLast().dropFirst())
         }.map { "#import \"\($0)\"" }
-        .sorted()
         
         return result
     }
@@ -58,24 +57,7 @@ extension String {
             return String(string[range].dropLast().dropFirst())
         }.map { "#import <\($0)>" }
         
-        var sortedResult = [[String]]()
-        var dictionary = [String: [String]]()
-        
-        result.forEach { each in
-            let frameworkName = String(each.split(separator: "/")[0])
-            
-            if dictionary[frameworkName] != nil {
-                dictionary[frameworkName]?.append(each)
-            } else {
-                dictionary[frameworkName] = [each]
-            }
-        }
-        
-        dictionary.sorted { $0.key < $1.key }.forEach { arg in
-            sortedResult.append(arg.value.sorted())
-        }
-        
-        return sortedResult.joined(separator: [""]).flatMap { $0 }
+       return result
     }
     
 }

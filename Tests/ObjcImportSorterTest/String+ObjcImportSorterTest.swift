@@ -29,7 +29,7 @@ class StringObjcImportSorterTest: XCTestCase {
         try? testFilePath.write(testContent)
     }
     
-    func test__shouldFindInternalImportAndSorted() {
+    func test__shouldFindInternalImports() {
         guard let fileContent: String = try? testFilePath.read() else {
             XCTFail("File content can't be nil")
             return
@@ -43,13 +43,9 @@ class StringObjcImportSorterTest: XCTestCase {
             XCTFail("Result count error, stop test avoid not stable test crash.")
             return
         }
-        
-        XCTAssertEqual(result[0], "#import \"a.h\"")
-        XCTAssertEqual(result[1], "#import \"c.h\"")
-        XCTAssertEqual(result[2], "#import \"y.h\"")
     }
     
-    func test__shouldFindFrameworkImportAndSorted() {
+    func test__shouldFindFrameworkImports() {
         guard let fileContent: String = try? testFilePath.read() else {
             XCTFail("File content can't be nil")
             return
@@ -57,21 +53,12 @@ class StringObjcImportSorterTest: XCTestCase {
         
         let result = fileContent.findFrameworkImport()
                 
-        let exceptCountTrue = result.count == 8
+        let exceptCountTrue = result.count == 5
         
         guard exceptCountTrue else {
             XCTFail("Result count error, stop test avoid not stable test crash.")
             return
         }
-        
-        XCTAssertEqual(result[0], "#import <b/b.h>")
-        XCTAssertEqual(result[1], "")
-        XCTAssertEqual(result[2], "#import <d/d.h>")
-        XCTAssertEqual(result[3], "")
-        XCTAssertEqual(result[4], "#import <e/e.h>")
-        XCTAssertEqual(result[5], "")
-        XCTAssertEqual(result[6], "#import <z/a.h>")
-        XCTAssertEqual(result[7], "#import <z/z.h>")
     }
     
     override func tearDown() {
