@@ -37,12 +37,7 @@ class StringObjcImportSorterTest: XCTestCase {
         
         let result = fileContent.findInternalImport()
         
-        let exceptCountTrue = result.count == 3
-        
-        guard exceptCountTrue else {
-            XCTFail("Result count error, stop test avoid not stable test crash.")
-            return
-        }
+        XCTAssertTrue(result.count == 3)
     }
     
     func test__shouldFindFrameworkImports() {
@@ -52,13 +47,8 @@ class StringObjcImportSorterTest: XCTestCase {
         }
         
         let result = fileContent.findFrameworkImport()
-                
-        let exceptCountTrue = result.count == 5
         
-        guard exceptCountTrue else {
-            XCTFail("Result count error, stop test avoid not stable test crash.")
-            return
-        }
+        XCTAssertTrue(result.count == 5)
     }
     
     override func tearDown() {

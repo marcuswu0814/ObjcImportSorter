@@ -30,42 +30,30 @@ class ImportSorterE2ETest: XCTestCase {
         let sut = ImportSorter()
         sut.sort(by: .h)
         
-        guard let fileContent: String = try? generalHeaderFilePath.read() else {
-            XCTFail("File content can't be nil")
-            return
-        }
-        
+        let fileContent: String? = try? generalHeaderFilePath.read()
         let exceptResult = TestDataFactory.exceptGeneralHeader
         
-        XCTAssertTrue(fileContent == exceptResult)
+        XCTAssertEqual(fileContent, exceptResult)
     }
     
     func test__whenFileIsCoreDataMOC__shuoldNotModifieldAnything() {
         let sut = ImportSorter()
         sut.sort(by: .h)
         
-        guard let fileContent: String = try? mocFilePath.read() else {
-            XCTFail("File content can't be nil")
-            return
-        }
-        
+        let fileContent: String? = try? mocFilePath.read()
         let exceptResult = TestDataFactory.mocHeader
         
-        XCTAssertTrue(fileContent == exceptResult)
+        XCTAssertEqual(fileContent, exceptResult)
     }
     
     func test__whenFileContainsCompilerIfKeyWord__shouldSkipTheSection() {
         let sut = ImportSorter()
         sut.sort(by: .h)
         
-        guard let fileContent: String = try? ifFilePath.read() else {
-            XCTFail("File content can't be nil")
-            return
-        }
-        
+        let fileContent: String? = try? ifFilePath.read()
         let exceptResult = TestDataFactory.exceptIfdefContent
         
-        XCTAssertTrue(fileContent == exceptResult)
+        XCTAssertEqual(fileContent, exceptResult)
     }
     
     override func tearDown() {
