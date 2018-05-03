@@ -19,18 +19,11 @@ class FilePathScannerTest: XCTestCase {
     func test__shouldFindTwoHeaderFile() {
         Path.current = tempDir
         
-        guard let result = FilePathScanner.scanFile(type: .h) else {
-            XCTFail("Result can't be nil")
-            return
-        }
+        let result = FilePathScanner.scanFile(type: .h)
         
-        XCTAssertTrue(result.count == 2)
-        XCTAssertTrue(result.contains(where: {
-            return $0.string.hasSuffix(aFilePath.string)
-        }))
-        XCTAssertTrue(result.contains(where: {
-            return $0.string.hasSuffix(bFilePath.string)
-        }))
+        XCTAssertEqual(result?.count, 2)
+        XCTAssertEqual(result?.contains(where: { $0.string.hasSuffix(aFilePath.string) }), true)
+        XCTAssertEqual(result?.contains(where: { $0.string.hasSuffix(bFilePath.string) }), true)
     }
     
     override func tearDown() {

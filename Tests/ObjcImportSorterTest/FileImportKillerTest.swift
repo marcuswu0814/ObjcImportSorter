@@ -4,27 +4,13 @@ import XCTest
 class FileImportKillerTest: XCTestCase {
     
     func test__shouldKillAllImports() {
-        let testContent =
-        """
-        // This is comment
-        // Second line
-
-        #import "a.h"
-        #import <b/b.h>
-        #import "c.h"
-        #import <d/d.h>
-        """
+        let testContent = TestDataFactory.generalHeader
         
         let sut = FileImportKiller(with: testContent)
         
         let result = sut.kill()
         
-        let exceptContent =
-        """
-        // This is comment
-        // Second line
-
-        """
+        let exceptContent = TestDataFactory.generalHeaderWithoutImport
         
         XCTAssertEqual(result, exceptContent)
     }

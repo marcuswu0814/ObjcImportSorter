@@ -1,5 +1,15 @@
 struct TestDataFactory {
     
+    static let noAnyImportFile =
+    """
+    //
+    //  FakeClass.h
+    //  Fake
+    //
+    //  Created by MarcusWu on 2018/5/3.
+    //
+    """
+    
     static let generalHeader =
     """
     //
@@ -21,6 +31,23 @@ struct TestDataFactory {
     #import <z/a.h>
 
     #import <Foundation/Foundation.h>
+    @interface FakeClass : UIView
+
+    @end
+
+    """
+    
+    static let generalHeaderWithoutImport =
+    """
+    //
+    //  FakeClass.h
+    //  Fake
+    //
+    //  Created by MarcusWu on 2018/4/24.
+    //
+
+
+
     @interface FakeClass : UIView
 
     @end

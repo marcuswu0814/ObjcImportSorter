@@ -12,20 +12,7 @@ class StringObjcImportSorterTest: XCTestCase {
         
         try? tempDir.mkdir()
         
-        let testContent =
-        """
-        #import  <z/z.h>
-        #import <z/a.h>
-        #import  "y.h"
-        #import "a.h"
-        #import <b/b.h>
-        #import "c.h"
-        #import <d/d.h>
-
-        typedef void (^MainBlock)(void);
-
-        #import <e/e.h>
-        """
+        let testContent = TestDataFactory.generalHeader
         try? testFilePath.write(testContent)
     }
     
@@ -33,14 +20,14 @@ class StringObjcImportSorterTest: XCTestCase {
         let fileContent: String? = try? testFilePath.read()
         let result = fileContent?.findInternalImport()
         
-        XCTAssertEqual(result?.count, 3)
+        XCTAssertEqual(result?.count, 4)
     }
     
     func test__shouldFindFrameworkImports() {
         let fileContent: String? = try? testFilePath.read()
         let result = fileContent?.findFrameworkImport()
         
-        XCTAssertEqual(result?.count, 5)
+        XCTAssertEqual(result?.count, 6)
     }
     
     override func tearDown() {
