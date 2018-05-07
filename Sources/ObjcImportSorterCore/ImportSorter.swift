@@ -61,26 +61,24 @@ public class ImportSorter {
                 return
             }
             
-            // Special case for CoreData `NSManagedObject` class
-            if let count = fileContent.regex("@interface.*NSManagedObject")?.count, count > 0 {
+            guard isNotMOCFile(by: fileContent) else {
                 return
             }
             
             let fileParts = filePart(by: fileContent)
-           
-            let detail = partDetails(by: fileParts)
+            let details = partDetails(by: fileParts)
             
-            let position = detail.filter { $0.isFirstPart }.first?.firstImportPosition
+            let position = details.filter { $0.isFirstPart }.first?.firstImportPosition
             
             guard let firstImportPosition = position else {
                 return
             }
 
-            let allInternalImports = detail.filter { !$0.isIfdefPart }.map { $0.internalImports }.flatMap { $0 }
-            let allFrameworkImports = detail.filter { !$0.isIfdefPart }.map { $0.frameworkImports }.flatMap { $0 }
+            let allInternalImports = details.filter { !$0.isIfdefPart }.map { $0.internalImports }.flatMap { $0 }
+            let allFrameworkImports = details.filter { !$0.isIfdefPart }.map { $0.frameworkImports }.flatMap { $0 }
             let allSortedFrameworkImports = ImportSortLogic().sortFrameworkImports(allFrameworkImports)
             let allSortedInternalImports = ImportSortLogic().sortInternalImports(allInternalImports)
-            let noImportFileContent = detail.map { $0.isIfdefPart ? $0.contentOrigin : $0.contentWithoutImport }.joined(separator: "\n\n").appending("\n\n")
+            let noImportFileContent = details.map { $0.isIfdefPart ? $0.contentOrigin : $0.contentWithoutImport }.joined(separator: "\n\n").appending("\n\n")
             
             let bothImportsNotEmpty = allSortedFrameworkImports.count > 0 && allSortedInternalImports.count > 0
             let combine = bothImportsNotEmpty ?
@@ -111,6 +109,14 @@ public class ImportSorter {
             
             try? path.write(lines.joined(separator: "\n"))
         })
+    }
+    
+    func isNotMOCFile(by content: String) -> Bool {
+        if let count = content.regex("@interface.*NSManagedObject")?.count, count > 0 {
+            return false
+        }
+        
+        return true
     }
     
     func partDetails(by fileParts: [String]) -> [PartDetail] {
