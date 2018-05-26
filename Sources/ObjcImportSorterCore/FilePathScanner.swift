@@ -1,5 +1,7 @@
 import Foundation
 import PathKit
+import Swift
+import SwiftCLIToolbox
 
 public enum FileType: String {
     case m = "*.m"

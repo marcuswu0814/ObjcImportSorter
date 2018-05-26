@@ -6,9 +6,7 @@ import PackageDescription
 let package = Package(
     name: "ObjcImportSorter",
     dependencies: [
-        .package(url: "https://github.com/kylef/PathKit.git", .upToNextMajor(from: "0.0.0")),
-        .package(url: "https://github.com/onevcat/Rainbow", from: "3.0.0"),
-        .package(url: "https://github.com/kylef/Commander", from: "0.8.0"),
+        .package(url: "https://github.com/marcuswu0814/SwiftCLIToolbox", .branch("master"))
     ],
     targets: [
         .target(
@@ -16,7 +14,7 @@ let package = Package(
             dependencies: ["ObjcImportSorterCore"]),
         .target(
             name: "ObjcImportSorterCore",
-            dependencies: ["Rainbow", "Commander", "PathKit"]),
+            dependencies: ["SwiftCLIToolbox"]),
         .testTarget(
             name: "ObjcImportSorterTest",
             dependencies: ["ObjcImportSorterCore"])
