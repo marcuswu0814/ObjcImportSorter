@@ -35,7 +35,7 @@ class ImportSortLogic {
             sortedResult.append(arg.value.sorted())
         }
         
-        return sortedResult.joined(separator: [""]).flatMap { $0 }
+        return sortedResult.joined(separator: [""]).compactMap { $0 }
     }
     
 }
@@ -103,7 +103,7 @@ public class ImportSorter {
             let endIndex = finalImportPosition + countOfEmptyLine - 1
             
             if (endIndex >= startIndex) {
-                let range = Range(startIndex..<endIndex)
+                let range = startIndex..<endIndex
                 lines.removeSubrange(range)
             }
             
@@ -172,8 +172,16 @@ public class ImportSorter {
         
         result.append(sectionContents.joined(separator: "\n"))
 
-        return result.filter { $0 != "" }.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        return result.filter { $0 != "" }.map { $0.trailingTrim(.whitespacesAndNewlines) }
     }
     
 }
 
+extension String {
+    func trailingTrim(_ characterSet : CharacterSet) -> String {
+        if let range = rangeOfCharacter(from: characterSet, options: [.anchored, .backwards]) {
+            return String(self[..<range.lowerBound]).trailingTrim(characterSet)
+        }
+        return self
+    }
+}

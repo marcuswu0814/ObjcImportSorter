@@ -138,6 +138,18 @@ struct TestDataFactory {
 
     @end
 
+    @implementation FakeClass
+    
+    - (void)testFunc {
+    
+    #ifdef TARGET
+        // In target
+    #endif
+        // Test
+    }
+
+    @end
+
     """
     
     static let exceptIfdefContent =
@@ -171,6 +183,19 @@ struct TestDataFactory {
     - (void)testFunc;
 
     #endif
+
+    @end
+
+    @implementation FakeClass
+    
+    - (void)testFunc {
+    
+    #ifdef TARGET
+        // In target
+    #endif
+
+        // Test
+    }
 
     @end
 
